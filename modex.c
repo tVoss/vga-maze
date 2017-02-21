@@ -138,6 +138,7 @@ static void fill_palette ();
 static void write_font_data ();
 static void set_text_mode_3 (int clear_scr);
 static void copy_image (unsigned char* img, unsigned short scr_addr);
+static void copy_status (unsigned char *img, unsigned short scr_addr);
 
 
 /*
@@ -526,6 +527,18 @@ show_screen ()
     OUTW (0x03D4, ((target_img & 0x00FF) << 8) | 0x0D);
 }
 
+void
+show_status (char *text) {
+    static unsigned char text_image[IMAGE_X_DIM * STATUS_Y_DIM];
+
+    text_to_image(text, text_image);
+
+    int i;
+    for (i = 0; i < 4; i++) {
+        SET_WRITE_MASK (1 << (i+8));
+        copy_status(text_image + i * STATUS_X_WIDTH, 0);
+    }
+}
 
 /*
  * clear_screens
@@ -1044,6 +1057,16 @@ copy_image (unsigned char* img, unsigned short scr_addr)
     );
 }
 
+static void copy_status (unsigned char *img, unsigned short scr_addr) {
+    asm volatile (
+        "cld                                                 ;"
+        "movl $1440,%%ecx                                    ;"
+        "rep movsb   # copy ECX bytes from M[ESI] to M[EDI]   "
+      : /* no outputs */
+      : "S" (img), "D" (mem_image + scr_addr)
+      : "eax", "ecx", "memory"
+    );
+}
 
 #if defined(TEXT_RESTORE_PROGRAM)
 

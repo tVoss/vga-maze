@@ -57,6 +57,7 @@
 #define SCROLL_X_WIDTH  (IMAGE_X_DIM / 4)          /* addresses (bytes)     */
 
 #define STATUS_Y_DIM 18
+#define STATUS_X_WIDTH IMAGE_X_WIDTH
 
 /*
  * NOTES
