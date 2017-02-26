@@ -45,6 +45,6 @@
 extern unsigned char font_data[256][16];
 
 /* Turn a string of text into an image */
-int text_to_image(char *text, unsigned char *buf);
+void text_to_image(char *text, unsigned char *buf);
 
 #endif /* TEXT_H */

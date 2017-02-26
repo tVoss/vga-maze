@@ -607,6 +607,4 @@ void text_to_image(char *text, unsigned char *buf) {
             }
         }
     }
-
-    return 0;
 }
