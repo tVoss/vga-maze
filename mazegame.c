@@ -468,7 +468,7 @@ static void *rtc_thread(void *arg)
 		// Show maze around the player's original position
 		(void)unveil_around_player (play_x, play_y);
 
-		draw_full_block (play_x, play_y, get_player_block(last_dir));
+		draw_player_block(play_x, play_y, get_player_block(last_dir), get_player_mask(last_dir));
 		show_screen();
 
 		// get first Periodic Interrupt
@@ -586,7 +586,7 @@ static void *rtc_thread(void *arg)
 						move_left (&play_x);
 						break;
 		   			}
-					draw_full_block (play_x, play_y, get_player_block(last_dir));
+					draw_player_block(play_x, play_y, get_player_block(last_dir), get_player_mask(last_dir));
 					need_redraw = 1;
 				}
 			}

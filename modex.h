@@ -139,6 +139,8 @@ extern void clear_screens ();
  */
 extern void draw_full_block (int pos_x, int pos_y, unsigned char* blk);
 
+extern void draw_player_block (int pos_x, int pos_y, unsigned char* blk, unsigned char *mask);
+
 /* draw a horizontal line at vertical pixel y within the logical view window */
 extern int draw_horiz_line (int y);
 
