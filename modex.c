@@ -527,8 +527,16 @@ show_screen ()
     OUTW (0x03D4, ((target_img & 0x00FF) << 8) | 0x0D);
 }
 
-void
-show_status (char *text) {
+/*
+ * show_status
+ *   DESCRIPTION: Show the status bar on the video display.
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: copies from the build buffer to video memory;
+ *                 shifts the VGA display source to point to the new image
+ */
+void show_status (char *text) {
     static unsigned char text_image[IMAGE_X_DIM * STATUS_Y_DIM];
 
     text_to_image(text, text_image);
@@ -536,7 +544,7 @@ show_status (char *text) {
     int i;
     for (i = 0; i < 4; i++) {
         SET_WRITE_MASK (1 << (i+8));
-        copy_status(text_image + i * STATUS_X_WIDTH, 0);
+        copy_status(text_image + i * STATUS_X_WIDTH * STATUS_Y_DIM, 0);
     }
 }
 
@@ -1057,6 +1065,16 @@ copy_image (unsigned char* img, unsigned short scr_addr)
     );
 }
 
+/*
+ * copy_image
+ *   DESCRIPTION: Copy one plane of the status from the build buffer to the
+ *                video memory.
+ *   INPUTS: img -- a pointer to a single screen plane in the build buffer
+ *           scr_addr -- the destination offset in video memory
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: copies a plane from the build buffer to video memory
+ */
 static void copy_status (unsigned char *img, unsigned short scr_addr) {
     asm volatile (
         "cld                                                 ;"

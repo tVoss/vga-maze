@@ -433,11 +433,13 @@ static int total = 0;
 static void *rtc_thread(void *arg)
 {
 	int ticks = 0;
-	int level;
+    int level;
+    int level_ticks;
 	int ret;
 	int open[NUM_DIRS];
 	int need_redraw = 0;
 	int goto_next_level = 0;
+    char text[MAX_STRING_LENGTH];
 
 	// Loop over levels until a level is lost or quit.
 	for (level = 1; (level <= MAX_LEVEL) && (quit_flag == 0); level++)
@@ -446,6 +448,7 @@ static void *rtc_thread(void *arg)
 		if (prepare_maze_level (level) != 0)
 			break;
 		goto_next_level = 0;
+        level_ticks = 0;
 
 		// Start the player at (1,1)
 		play_x = BLOCK_X_DIM;
@@ -482,6 +485,7 @@ static void *rtc_thread(void *arg)
 			ticks = data >> 8;
 
 			total += ticks;
+            level_ticks += ticks;
 
 			// If the system is completely overwhelmed we better slow down:
 			if (ticks > 8) ticks = 8;
@@ -589,7 +593,12 @@ static void *rtc_thread(void *arg)
 			if (need_redraw) {
                 show_screen();
             }
-            show_status();
+            sprintf(text, "Level %d    %d Fruit    %.2i:%.2i",
+                level,
+                get_remaining_fruit(),
+                level_ticks / 32 / 60,
+                level_ticks / 32);
+            show_status(text);
 			need_redraw = 0;
 		}
 	}

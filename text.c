@@ -563,8 +563,50 @@ unsigned char font_data[256][16] = {
      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
 };
 
-int text_to_image(char *text, unsigned char *buf) {
-    int i;
-    memset(buf, 0x2, sizeof(unsigned char) * IMAGE_X_DIM * STATUS_Y_DIM);
+/*
+ * get_index
+ *   DESCRIPTION: Gets the integer index of the status bar buffer given coordinates
+ *   INPUTS: (x, y) Coordinates of pixel
+ *   OUTPUTS: none
+ *   RETURN VALUE: The index in the buffer
+ *   SIDE EFFECTS: none
+ */
+int get_index(int x, int y) {
+    // Not checking bounds
+    int col = x & 0x3;
+    int index = x / 4;
+    index += col * STATUS_X_WIDTH * STATUS_Y_DIM;
+    index += STATUS_X_WIDTH * y;
+    return index;
+}
+
+/*
+ * text_to_image
+ *   DESCRIPTION: Turns a string of text into the status bar image
+ *   INPUTS: (text) The text to turn into an image
+ *   OUTPUTS: (buf) Array of length STATUS_X_DIM * STATUS_Y_DIM to hold the image
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: none
+ */
+void text_to_image(char *text, unsigned char *buf) {
+    int length = strlen(text);
+    memset(buf, 0, sizeof(unsigned char) * STATUS_X_DIM * STATUS_Y_DIM);
+
+    int start = (STATUS_X_DIM - length * FONT_WIDTH) / 2;
+    int c, i, j;
+    for (c = 0; c < length; c++) {
+        for (j = 0; j < FONT_HEIGHT; j++) {
+
+            int y = j + 1;
+            unsigned char byte = font_data[(int) text[c]][j];
+
+            for (i = 0; i < FONT_WIDTH; i++) {
+                int x = start + i + c * FONT_WIDTH + 1;
+                int index = get_index(x, y);
+                buf[index] = byte & 1 << (FONT_WIDTH - i) ? 11 : 0;
+            }
+        }
+    }
+
     return 0;
 }

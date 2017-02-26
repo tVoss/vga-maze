@@ -56,6 +56,7 @@
 #define SCROLL_Y_DIM    182                /* full image width      */
 #define SCROLL_X_WIDTH  (IMAGE_X_DIM / 4)          /* addresses (bytes)     */
 
+#define STATUS_X_DIM IMAGE_X_DIM
 #define STATUS_Y_DIM 18
 #define STATUS_X_WIDTH IMAGE_X_WIDTH
 
@@ -124,6 +125,9 @@ extern void set_view_window (int scr_x, int scr_y);
 
 /* show the logical view window on the monitor */
 extern void show_screen ();
+
+/* show the status bar */
+extern void show_status();
 
 /* clear the video memory in mode X */
 extern void clear_screens ();

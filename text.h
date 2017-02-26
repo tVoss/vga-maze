@@ -39,10 +39,12 @@
 /* The default VGA text mode font is 8x16 pixels. */
 #define FONT_WIDTH   8
 #define FONT_HEIGHT 16
+#define MAX_STRING_LENGTH STATUS_X_DIM / FONT_WIDTH
 
 /* Standard VGA text font. */
 extern unsigned char font_data[256][16];
 
+/* Turn a string of text into an image */
 int text_to_image(char *text, unsigned char *buf);
 
 #endif /* TEXT_H */

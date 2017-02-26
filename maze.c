@@ -8,18 +8,18 @@
  * documentation for any purpose, without fee, and without written agreement is
  * hereby granted, provided that the above copyright notice and the following
  * two paragraphs appear in all copies of this software.
- * 
- * IN NO EVENT SHALL THE AUTHOR OR THE UNIVERSITY OF ILLINOIS BE LIABLE TO 
- * ANY PARTY FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL 
- * DAMAGES ARISING OUT  OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, 
- * EVEN IF THE AUTHOR AND/OR THE UNIVERSITY OF ILLINOIS HAS BEEN ADVISED 
+ *
+ * IN NO EVENT SHALL THE AUTHOR OR THE UNIVERSITY OF ILLINOIS BE LIABLE TO
+ * ANY PARTY FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL
+ * DAMAGES ARISING OUT  OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
+ * EVEN IF THE AUTHOR AND/OR THE UNIVERSITY OF ILLINOIS HAS BEEN ADVISED
  * OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
- * THE AUTHOR AND THE UNIVERSITY OF ILLINOIS SPECIFICALLY DISCLAIM ANY 
- * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF 
- * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.  THE SOFTWARE 
+ *
+ * THE AUTHOR AND THE UNIVERSITY OF ILLINOIS SPECIFICALLY DISCLAIM ANY
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.  THE SOFTWARE
  * PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND NEITHER THE AUTHOR NOR
- * THE UNIVERSITY OF ILLINOIS HAS ANY OBLIGATION TO PROVIDE MAINTENANCE, 
+ * THE UNIVERSITY OF ILLINOIS HAS ANY OBLIGATION TO PROVIDE MAINTENANCE,
  * SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS."
  *
  * Author:	    Steve Lumetta
@@ -88,18 +88,18 @@ static int n_fruits;          /* number of fruits in maze     */
 static int exit_x, exit_y;    /* lattice point of maze exit   */
 
 
-/* 
+/*
  * maze array index calculation macro; maze dimensions are valid only
  * after a call to make_maze
  */
 #define MAZE_INDEX(a,b) ((a) + ((b) + 1) * maze_x_dim * 2)
 
 
-/* 
+/*
  * mark_maze_area
- *   DESCRIPTION: Uses a breadth-first search to marks all parts of the 
+ *   DESCRIPTION: Uses a breadth-first search to marks all parts of the
  *                maze accessible from (x,y) with the MAZE_REACH bit.
- *                Stops at walls and at maze locations already marked 
+ *                Stops at walls and at maze locations already marked
  *                as reached.
  *   INPUTS: (x,y) -- starting coordinate within maze
  *   OUTPUTS: none
@@ -109,16 +109,16 @@ static int exit_x, exit_y;    /* lattice point of maze exit   */
 static int
 mark_maze_area (int x, int y)
 {
-    /* 
+    /*
      * queue for breadth-first search
      *
-     * The queue holds pointers to maze locations in memory.  It is 
-     * large enough to hold the whole maze, although it should never 
-     * hold more than twice the minimum of rows and columns at any 
+     * The queue holds pointers to maze locations in memory.  It is
+     * large enough to hold the whole maze, although it should never
+     * hold more than twice the minimum of rows and columns at any
      * time with our maze graphs.
      *
      * q_start is the index of the first unexplored location in the queue
-     * q_end is the index just after the last unexplored location in the 
+     * q_end is the index just after the last unexplored location in the
      *       queue
      * cur is the maze location being explored
      */
@@ -138,8 +138,8 @@ mark_maze_area (int x, int y)
         /* Get location from front of queue. */
 	cur = q[q_start++];
 
-	/* 
-	 * Explore four directions from current position.  Maze 
+	/*
+	 * Explore four directions from current position.  Maze
 	 * construction guarantees that an adjacent open space implies
 	 * that the subsequent space in the same direction both exists
 	 * and is open (not a MAZE_WALL).
@@ -171,7 +171,7 @@ mark_maze_area (int x, int y)
 	}
     }
 
-    /* 
+    /*
      * The queue is empty.  The number of locations marked is just q_end,
      * the number that passed through the queue.
      */
@@ -179,24 +179,24 @@ mark_maze_area (int x, int y)
 }
 
 
-/* 
+/*
  * make_maze
  *   DESCRIPTION: Create a maze of specified dimensions.  The maze is
  *                built as a two-dimensional lattice in which the points
  *       01234	  with odd indices in both dimensions are always open,
  *     0 -----	  those with even indices in both dimensions are always
  *     1 - ? -	  walls, and other points are either open or walls to form
- *     2 -?*?-	  the maze.  The maze to the left is a 2x2 example.  The 
- *     3 - ? -	  spaces are the four (odd,odd) lattice points.  The 
- *     4 -----	  boundary is marked with minus signs (these are always 
- *  		  walls).  The one (even,even) lattice point--also always 
+ *     2 -?*?-	  the maze.  The maze to the left is a 2x2 example.  The
+ *     3 - ? -	  spaces are the four (odd,odd) lattice points.  The
+ *     4 -----	  boundary is marked with minus signs (these are always
+ *  		  walls).  The one (even,even) lattice point--also always
  *  		  a wall--is marked with an asterisk.  Finally, the
- *  		  four question marks may or may not be walls; these 
+ *  		  four question marks may or may not be walls; these
  *  		  four options are used to create different mazes.
  *
  *                The algorithm used consists of two phases.  In the first
- *                phase, metaphorical worms are dropped into the maze and 
- *                allowed to wander about randomly, digging out the maze, 
+ *                phase, metaphorical worms are dropped into the maze and
+ *                allowed to wander about randomly, digging out the maze,
  *                until they decide to stop.  More worms are added until
  *                all of the (odd,odd) points have been cleared.  Each worm
  *	          starts on an (odd,odd) point still marked as a wall.
@@ -226,9 +226,9 @@ mark_maze_area (int x, int y)
 int
 make_maze (int x_dim, int y_dim, int start_fruits)
 {
-    /* 
+    /*
      * worm turn weights; the first dimension is relative direction
-     * (number of 90-degree turns clockwise from up); the second is 
+     * (number of 90-degree turns clockwise from up); the second is
      * whether the resulting space is open (not a wall) or a wall.
      */
     static int turn_wt[4][2] = {{1, 84}, {1, 9}, {3, 3}, {1, 9}};
@@ -254,9 +254,9 @@ make_maze (int x_dim, int y_dim, int start_fruits)
      * 'worm' phase of maze generation
      */
 
-    /* 
-     * Track the number of (odd,odd) lattice points still marked 
-     * as MAZE_WALL. 
+    /*
+     * Track the number of (odd,odd) lattice points still marked
+     * as MAZE_WALL.
      */
     remaining = maze_x_dim * maze_y_dim;
     do {
@@ -275,7 +275,7 @@ make_maze (int x_dim, int y_dim, int start_fruits)
 
 	/* Move around the maze until worm turns back on itself. */
 	while (1) {
-	    /* 
+	    /*
 	     * Choose the next direction of motion using weighted random
 	     * selection.  The directions are hardcoded.  The wt array
 	     * is the cumulative weight for each direction, and total
@@ -284,7 +284,7 @@ make_maze (int x_dim, int y_dim, int start_fruits)
 	     * direction picked according to the weight distribution.
 	     * Weighting depends on direction and whether or not the
 	     * maze location has already been visited (is not a MAZE_WALL).
-	     * This code 
+	     * This code
 	     */
 	    total = 0;
 	    if (y > 1)
@@ -337,14 +337,14 @@ make_maze (int x_dim, int y_dim, int start_fruits)
 	    maze[MAZE_INDEX (x, y)] = MAZE_NONE;
 	} /* loop for one worm */
 
-    /* 
+    /*
      * The worm phase continues until all of the (odd,odd) lattice
      * points in the maze are all empty.
      */
-    } while (remaining > 0); 
+    } while (remaining > 0);
 
-    /* 
-     * Begin the second phase of the algorithm, in which we guarantee 
+    /*
+     * Begin the second phase of the algorithm, in which we guarantee
      * connectivity between all (odd,odd) lattice points in the maze.
      * We start by marking everything connected to (1,1).
      */
@@ -353,7 +353,7 @@ make_maze (int x_dim, int y_dim, int start_fruits)
     do {
         /*
 	 * Once most of the maze is connected, or we have tried randomly
-	 * "enough" times (arbitrarily defined as 100 times here, we scan 
+	 * "enough" times (arbitrarily defined as 100 times here, we scan
 	 * the rest of the maze for opportunities for connecting new regions
 	 * of the maze to the (1,1) lattice point.
 	 */
@@ -374,7 +374,7 @@ make_maze (int x_dim, int y_dim, int start_fruits)
 		cur = &maze[MAZE_INDEX (x, y)];
 	    } while ((cur[0] & MAZE_REACH) != 0);
 	}
-	/* 
+	/*
 	 * Try to connect the unconnected point by knocking down a wall
 	 * in some direction.
 	 */
@@ -387,19 +387,19 @@ make_maze (int x_dim, int y_dim, int start_fruits)
 	else if (y < 2 * maze_y_dim - 1 &&
 		 (cur[4 * maze_x_dim] & MAZE_REACH) != 0)
 	    cur[2 * maze_x_dim] = MAZE_NONE;
-	else 
+	else
 	    continue;
-	/* 
+	/*
 	 * Success!  Mark the newly connected portion of the maze
 	 * as reachable.
 	 */
 	remaining -= mark_maze_area (x, y);
     } while (remaining > 0);
 
-    /* 
+    /*
      * Remove the MAZE_REACH markers--these are reused to mark those
      * portions of the maze already seen by the player.
-     */ 
+     */
     for (x = 1; x < 2 * maze_x_dim; x += 2)
         for (y = 1; y < 2 * maze_y_dim; y += 2)
 	    maze[MAZE_INDEX (x, y)] &= ~MAZE_REACH;
@@ -441,14 +441,14 @@ make_maze (int x_dim, int y_dim, int start_fruits)
 
 /*
  * The functions inside the preprocessor block below rely on block image
- * data in blocks.s.  These external data are neither available nor 
- * necessary for testing maze generation, and are omitted to simplify 
+ * data in blocks.s.  These external data are neither available nor
+ * necessary for testing maze generation, and are omitted to simplify
  * linking the test program (i.e., when TEST_MAZE_GEN is 1).
  */
 #if (TEST_MAZE_GEN == 0)
 
 
-/* 
+/*
  * find_block
  *   DESCRIPTION: Find the appropriate image to be used for a given maze
  *                lattice point.
@@ -472,7 +472,7 @@ find_block (int x, int y)
     if (n_fruits == 0 && (maze[MAZE_INDEX (x, y)] & MAZE_EXIT) != 0)
         return (unsigned char*)blocks[BLOCK_EXIT];
 
-    /* 
+    /*
      * Everything else not reached is shrouded in mist, although fruits
      * show up as bumps.
      */
@@ -499,13 +499,13 @@ find_block (int x, int y)
 }
 
 
-/* 
+/*
  * fill_horiz_buffer
- *   DESCRIPTION: Given the (x,y) map pixel coordinate of the leftmost 
- *                pixel of a line to be drawn on the screen, this routine 
+ *   DESCRIPTION: Given the (x,y) map pixel coordinate of the leftmost
+ *                pixel of a line to be drawn on the screen, this routine
  *                produces an image of the line.  Each pixel on the line
  *                is represented as a single byte in the image.
- *   INPUTS: (x,y) -- leftmost pixel of line to be drawn 
+ *   INPUTS: (x,y) -- leftmost pixel of line to be drawn
  *   OUTPUTS: buf -- buffer holding image data for the line
  *   RETURN VALUE: none
  *   SIDE EFFECTS: none
@@ -515,7 +515,7 @@ fill_horiz_buffer (int x, int y, unsigned char buf[SCROLL_X_DIM])
 {
     int map_x, map_y;     /* maze lattice point of the first block on line */
     int sub_x, sub_y;     /* sub-block address                             */
-    int idx;              /* loop index over pixels in the line            */ 
+    int idx;              /* loop index over pixels in the line            */
     unsigned char* block; /* pointer to current maze block image           */
 
     /* Find the maze lattice point and the pixel address within that block. */
@@ -534,21 +534,21 @@ fill_horiz_buffer (int x, int y, unsigned char buf[SCROLL_X_DIM])
 	for (; idx < SCROLL_X_DIM && sub_x < BLOCK_X_DIM; idx++, sub_x++)
 	    buf[idx] = *block++;
 
-	/* 
-	 * All subsequent blocks are copied starting from the left side 
-	 * of the block. 
+	/*
+	 * All subsequent blocks are copied starting from the left side
+	 * of the block.
 	 */
 	sub_x = 0;
     }
 }
 
-/* 
+/*
  * fill_vert_buffer
- *   DESCRIPTION: Given the (x,y) map pixel coordinate of the top pixel of 
- *                a vertical line to be drawn on the screen, this routine 
+ *   DESCRIPTION: Given the (x,y) map pixel coordinate of the top pixel of
+ *                a vertical line to be drawn on the screen, this routine
  *                produces an image of the line.  Each pixel on the line
  *                is represented as a single byte in the image.
- *   INPUTS: (x,y) -- top pixel of line to be drawn 
+ *   INPUTS: (x,y) -- top pixel of line to be drawn
  *   OUTPUTS: buf -- buffer holding image data for the line
  *   RETURN VALUE: none
  *   SIDE EFFECTS: none
@@ -558,7 +558,7 @@ fill_vert_buffer (int x, int y, unsigned char buf[SCROLL_Y_DIM])
 {
     int map_x, map_y;     /* maze lattice point of the first block on line */
     int sub_x, sub_y;     /* sub-block address                             */
-    int idx;              /* loop index over pixels in the line            */ 
+    int idx;              /* loop index over pixels in the line            */
     unsigned char* block; /* pointer to current maze block image           */
 
     /* Find the maze lattice point and the pixel address within that block. */
@@ -574,13 +574,13 @@ fill_vert_buffer (int x, int y, unsigned char buf[SCROLL_Y_DIM])
 	block = find_block (map_x, map_y++) + sub_y * BLOCK_X_DIM + sub_x;
 
 	/* Write block colors from one line into buffer. */
-	for (; idx < SCROLL_Y_DIM && sub_y < BLOCK_Y_DIM; 
+	for (; idx < SCROLL_Y_DIM && sub_y < BLOCK_Y_DIM;
 	    idx++, sub_y++, block += BLOCK_X_DIM)
 	    buf[idx] = *block;
 
-	/* 
+	/*
 	 * All subsequent blocks are copied starting from the top
-	 * of the block. 
+	 * of the block.
 	 */
 	sub_y = 0;
     }
@@ -589,7 +589,7 @@ fill_vert_buffer (int x, int y, unsigned char buf[SCROLL_Y_DIM])
 }
 
 
-/* 
+/*
  * unveil_space
  *   DESCRIPTION: Unveils a maze lattice point (marks as MAZE_REACH, which
  *                means that it is drawn normally rather than as under mist),
@@ -603,8 +603,8 @@ void
 unveil_space (int x, int y)
 {
     unsigned char* cur; /* pointer to the maze lattice point */
-    
-    /* 
+
+    /*
      * There's a wee bitty little bug in this function in the sense
      * that, if the left boundary is exposed, and the player reaches
      * the right boundary without scrolling the screen, the right
@@ -615,8 +615,8 @@ unveil_space (int x, int y)
      * anyway for our mazes.
      */
 
-    /* 
-     * Allow exposure of bottom and right boundaries (left and right 
+    /*
+     * Allow exposure of bottom and right boundaries (left and right
      * boundaries are the same lattice point in the maze).
      */
     if (x < 0 || x > 2 * maze_x_dim || y < 0 || y > 2 * maze_y_dim)
@@ -633,7 +633,7 @@ unveil_space (int x, int y)
 }
 
 
-/* 
+/*
  * check_for_fruit
  *   DESCRIPTION: Checks a maze lattice point for fruit, eats the fruit if
  *                one is present (i.e., removes it from the maze), and updates
@@ -648,7 +648,7 @@ int
 check_for_fruit (int x, int y)
 {
     int fnum;  /* fruit number found */
-    
+
     /* If outside the feasible fruit range, return no fruit. */
     if (x < 0 || x >= 2 * maze_x_dim || y < 0 || y >= 2 * maze_y_dim)
         return 0;
@@ -666,7 +666,7 @@ check_for_fruit (int x, int y)
 
 	/* The exit may appear. */
 	if (n_fruits == 0)
-	    draw_full_block (exit_x * BLOCK_X_DIM, exit_y * BLOCK_Y_DIM, 
+	    draw_full_block (exit_x * BLOCK_X_DIM, exit_y * BLOCK_Y_DIM,
 			     find_block (exit_x, exit_y));
 
 	/* Redraw the space with no fruit. */
@@ -678,9 +678,9 @@ check_for_fruit (int x, int y)
 }
 
 
-/* 
+/*
  * check_for_win
- *   DESCRIPTION: Checks whether the play has won the maze by reaching a 
+ *   DESCRIPTION: Checks whether the play has won the maze by reaching a
  *                given maze lattice point.  Winning occurs when no fruits
  *                remain in the maze, and the player reaches the maze exit.
  *   INPUTS: (x,y) -- the lattice point at which the player has arrived
@@ -694,13 +694,13 @@ check_for_win (int x, int y)
     /* Check that position falls within valid boundaries for exit. */
     if (x < 0 || x >= 2 * maze_x_dim || y < 0 || y >= 2 * maze_y_dim)
         return 0;
-    
+
     /* Return win condition. */
     return (n_fruits == 0 && (maze[MAZE_INDEX (x, y)] & MAZE_EXIT) != 0);
 }
 
 
-/* 
+/*
  * _add_a_fruit
  *   DESCRIPTION: Add a fruit to a random (odd,odd) lattice point in the
  *                maze.  Update the number of fruits, including the displayed
@@ -716,7 +716,7 @@ _add_a_fruit (int show)
     int x, y;    /* lattice point for new fruit */
 
     /*
-     * Pick an unfruited lattice point at random.  Could fall on the 
+     * Pick an unfruited lattice point at random.  Could fall on the
      * maze exit, if that is already defined.
      */
     do {
@@ -725,7 +725,7 @@ _add_a_fruit (int show)
     } while ((maze[MAZE_INDEX (x, y)] & MAZE_FRUIT));
 
     /* Add a random fruit to that location. */
-    maze[MAZE_INDEX (x, y)] |= 
+    maze[MAZE_INDEX (x, y)] |=
         ((random () % NUM_FRUIT_TYPES) + 1) * MAZE_FRUIT_1;
 
     /* Update the number of fruits. */
@@ -737,7 +737,7 @@ _add_a_fruit (int show)
 }
 
 
-/* 
+/*
  * add_a_fruit
  *   DESCRIPTION: Add a fruit to a random (odd,odd) lattice point in the
  *                maze.  Update the number of fruits, including the displayed
@@ -756,15 +756,26 @@ add_a_fruit ()
 
     /* The exit may disappear. */
     if (n_fruits == 1)
-	draw_full_block (exit_x * BLOCK_X_DIM, exit_y * BLOCK_Y_DIM, 
+	draw_full_block (exit_x * BLOCK_X_DIM, exit_y * BLOCK_Y_DIM,
 			 find_block (exit_x, exit_y));
 
     /* Return the current number of fruits in the maze. */
     return n_fruits;
 }
 
+/*
+ * get_remaining_fruit
+ *   DESCRIPTION: Gets the amount of fruit left in the level
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   RETURN VALUE: The remaining fruit
+ *   SIDE EFFECTS: none
+ */
+int get_remaining_fruit() {
+    return n_fruits;
+}
 
-/* 
+/*
  * add_a_fruit_internal
  *   DESCRIPTION: Add a fruit to a random (odd,odd) lattice point in the
  *                maze.  Update the number of fruits, including the displayed
@@ -777,15 +788,15 @@ add_a_fruit ()
 static void
 add_a_fruit_internal ()
 {
-    /* 
-     * Call a helper function, indicating that fruit should not be drawn 
+    /*
+     * Call a helper function, indicating that fruit should not be drawn
      * on the screen at this point.
      */
     _add_a_fruit (0);
 }
 
 
-/* 
+/*
  * get_player_block
  *   DESCRIPTION: Get a graphical image for the player.
  *   INPUTS: cur_dir -- current direction of motion for the player
@@ -802,7 +813,7 @@ get_player_block (dir_t cur_dir)
 }
 
 
-/* 
+/*
  * get_player_mask
  *   DESCRIPTION: Get a graphical mask for the player.
  *   INPUTS: cur_dir -- current direction of motion for the player
@@ -812,7 +823,7 @@ get_player_block (dir_t cur_dir)
  *                 C array of dimension [BLOCK_Y_DIM][BLOCK_X_DIM];
  *                 the bytes in this block indicate whether or not the
  *                 corresponding byte in the player image should be
- *                 drawn (1 is drawn/opaque, 0 is not drawn/fully 
+ *                 drawn (1 is drawn/opaque, 0 is not drawn/fully
  *                 transparent)
  *   SIDE EFFECTS: none
  */
@@ -823,17 +834,17 @@ get_player_mask (dir_t cur_dir)
 }
 
 
-/* 
+/*
  * find_open_directions
- *   DESCRIPTION: Determine which directions are open to movement from a 
+ *   DESCRIPTION: Determine which directions are open to movement from a
  *   	 	  given maze point.
  *   INPUTS: (x,y) -- lattice point of interest in maze
  *   OUTPUTS: open[] -- array of boolean values indicating that a direction
- *   		        is open; indexed by DIR_* enumeration values 
+ *   		        is open; indexed by DIR_* enumeration values
  *   RETURN VALUE: none
  *   SIDE EFFECTS: none
  */
-void 
+void
 find_open_directions (int x, int y, int op[NUM_DIRS])
 {
     op[DIR_UP]    = (0 == (maze[MAZE_INDEX (x, y - 1)] & MAZE_WALL));
@@ -844,13 +855,13 @@ find_open_directions (int x, int y, int op[NUM_DIRS])
 
 
 #else /* TEST_MAZE_GEN == 1 */
-/* 
- * The code here allows you to test the maze generation routines visually 
+/*
+ * The code here allows you to test the maze generation routines visually
  * by creating a maze and printing it to the screen.
  */
 
 
-/* 
+/*
  * print_maze
  *   DESCRIPTION: Print a maze as ASCII text.
  *   INPUTS: none
@@ -870,12 +881,12 @@ print_maze ()
         /* Loop over maze columns. */
 	for (j = 0; j <= 2 * maze_x_dim; j++) {
 
-	    /* 
+	    /*
 	     * Print open spaces and walls, reached and unreached, as
 	     * distinct characters.
 	     */
-	    printf ("%c", 
-	            ((maze[MAZE_INDEX (j, i)] & MAZE_WALL) ? 
+	    printf ("%c",
+	            ((maze[MAZE_INDEX (j, i)] & MAZE_WALL) ?
 		      ((maze[MAZE_INDEX (j, i)] & MAZE_REACH) ? '*' : '%') :
 		      ((maze[MAZE_INDEX (j, i)] & MAZE_REACH) ? '.' : ' ')));
 	}
@@ -886,14 +897,14 @@ print_maze ()
 }
 
 
-/* 
+/*
  * This function is called in maze generation.  We define a stub to keep
  * the linker happy.
  */
 static void add_a_fruit_internal () {}
 
 
-/* 
+/*
  * main
  *   DESCRIPTION: main program for testing maze generation; hardwired to
  *                build and print a maze of a certain size
@@ -910,4 +921,3 @@ main ()
 }
 
 #endif /* TEST_MAZE_GEN */
-
