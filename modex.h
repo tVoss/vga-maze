@@ -137,9 +137,7 @@ extern void clear_screens ();
  * (pos_x,pos_y); any part of the block outside of the logical view window
  * is clipped (cut off and not drawn)
  */
-extern void draw_full_block (int pos_x, int pos_y, unsigned char* blk);
-
-extern void draw_player_block (int pos_x, int pos_y, unsigned char* blk, unsigned char *mask);
+extern void draw_full_block (int pos_x, int pos_y, unsigned char* blk, unsigned char *mask);
 
 /* draw a horizontal line at vertical pixel y within the logical view window */
 extern int draw_horiz_line (int y);
