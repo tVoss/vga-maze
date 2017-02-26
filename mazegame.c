@@ -597,7 +597,7 @@ static void *rtc_thread(void *arg)
                 level,
                 get_remaining_fruit(),
                 level_ticks / 32 / 60,
-                level_ticks / 32);
+                level_ticks / 32 % 60);
             show_status(text);
 			need_redraw = 0;
 		}
