@@ -566,7 +566,17 @@ clear_screens ()
     memset (mem_image, 0, MODE_X_MEM_SIZE);
 }
 
+/* Buffer to hold the image under the player */
 static unsigned char player_buffer[BLOCK_X_DIM][BLOCK_Y_DIM];
+
+/*
+ * erase_player
+ *   DESCRIPTION: Removes the player's image from the screen and restores what was under it
+ *   INPUTS: (play_x, play_y) - Coordinates of the player
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: Updates the video memory to pre-player state
+ */
 void erase_player(int play_x, int play_y) {
     int dy, dx;
     for (dy = 0; dy < BLOCK_Y_DIM; dy++, play_y++) {
@@ -639,6 +649,8 @@ draw_full_block (int pos_x, int pos_y, unsigned char* blk, unsigned char *mask)
     /* Draw the clipped image. */
     for (dy = 0; dy < y_bottom; dy++, pos_y++) {
 	    for (dx = 0; dx < x_right; dx++, pos_x++, blk++) {
+
+            // If we have a mask we know it's the player and need to conditionally draw
             if (mask) {
                 player_buffer[dx][dy] = *(img3 + (pos_x >> 2) + pos_y * SCROLL_X_WIDTH + (3 - (pos_x & 3)) * SCROLL_SIZE);
                 if (!mask[dx + dy * BLOCK_X_DIM]) {

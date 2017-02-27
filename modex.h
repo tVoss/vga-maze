@@ -132,6 +132,7 @@ extern void show_status();
 /* clear the video memory in mode X */
 extern void clear_screens ();
 
+/* Removes the player from the screen */
 void erase_player(int x, int y);
 
 /*
