@@ -566,6 +566,17 @@ clear_screens ()
     memset (mem_image, 0, MODE_X_MEM_SIZE);
 }
 
+static unsigned char player_buffer[BLOCK_X_DIM][BLOCK_Y_DIM];
+void erase_player(int play_x, int play_y) {
+    int dy, dx;
+    for (dy = 0; dy < BLOCK_Y_DIM; dy++, play_y++) {
+        for (dx = 0; dx < BLOCK_X_DIM; dx++, play_x++) {
+            *(img3 + (play_x >> 2) + play_y * SCROLL_X_WIDTH + (3 - (play_x & 3)) * SCROLL_SIZE) = player_buffer[dx][dy];
+        }
+        play_x -= BLOCK_X_DIM;
+    }
+}
+
 /*
  * draw_full_block
  *   DESCRIPTION: Draw a BLOCK_X_DIM x BLOCK_Y_DIM block at absolute
@@ -628,9 +639,13 @@ draw_full_block (int pos_x, int pos_y, unsigned char* blk, unsigned char *mask)
     /* Draw the clipped image. */
     for (dy = 0; dy < y_bottom; dy++, pos_y++) {
 	    for (dx = 0; dx < x_right; dx++, pos_x++, blk++) {
-            if (!mask || mask[dx + dy * BLOCK_X_DIM]) {
-	            *(img3 + (pos_x >> 2) + pos_y * SCROLL_X_WIDTH + (3 - (pos_x & 3)) * SCROLL_SIZE) = *blk;
+            if (mask) {
+                player_buffer[dx][dy] = *(img3 + (pos_x >> 2) + pos_y * SCROLL_X_WIDTH + (3 - (pos_x & 3)) * SCROLL_SIZE);
+                if (!mask[dx + dy * BLOCK_X_DIM]) {
+                    continue;
+                }
             }
+            *(img3 + (pos_x >> 2) + pos_y * SCROLL_X_WIDTH + (3 - (pos_x & 3)) * SCROLL_SIZE) = *blk;
         }
     	pos_x -= x_right;
     	blk += x_left;

@@ -470,6 +470,7 @@ static void *rtc_thread(void *arg)
 
 		draw_full_block(play_x, play_y, get_player_block(last_dir), get_player_mask(last_dir));
 		show_screen();
+        erase_player(play_x, play_y);
 
 		// get first Periodic Interrupt
 		ret = read(fd, &data, sizeof(unsigned long));
@@ -592,6 +593,7 @@ static void *rtc_thread(void *arg)
 			}
 			if (need_redraw) {
                 show_screen();
+                erase_player(play_x, play_y);
             }
             sprintf(text, "Level %d    %d Fruit    %.2i:%.2i",
                 level,
