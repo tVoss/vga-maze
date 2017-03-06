@@ -1,4 +1,5 @@
 *.o
+input
 input-demo
 mazegame
 mazegame-demo

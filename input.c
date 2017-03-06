@@ -52,6 +52,7 @@
 #include "input.h"
 #include "maze.h"
 
+#include "module/tuxctl-ioctl.h"
 
 /* set to 1 and compile this file by itself to test functionality */
 #define TEST_INPUT_DRIVER 1
@@ -62,7 +63,7 @@
 
 /* stores original terminal settings */
 static struct termios tio_orig;
-
+int fd;
 
 /*
  * init_input
@@ -108,9 +109,13 @@ init_input ()
     tio_new.c_cc[VMIN] = 1;
     tio_new.c_cc[VTIME] = 0;
     if (tcsetattr (fileno (stdin), TCSANOW, &tio_new) != 0) {
-	perror ("tcsetattr to set stdin terminal settings");
-	return -1;
+    	perror ("tcsetattr to set stdin terminal settings");
+    	return -1;
     }
+
+    fd = open("/dev/ttyS0", O_RDWR | O_NOCTTY);
+    int ldsic_num = N_MOUSE;
+    ioctl(fd, TIOCSETD, &ldsic_num);
 
     /* Return success. */
     return 0;
@@ -129,7 +134,67 @@ init_input ()
  *   SIDE EFFECTS: drains any keyboard input
  */
 cmd_t
-get_command (dir_t cur_dir)
+get_command (dir_t cur_dir)/*									tab:8
+ *
+ * input.h - header file for input control to maze game
+ *
+ * "Copyright (c) 2004-2009 by Steven S. Lumetta."
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose, without fee, and without written agreement is
+ * hereby granted, provided that the above copyright notice and the following
+ * two paragraphs appear in all copies of this software.
+ *
+ * IN NO EVENT SHALL THE AUTHOR OR THE UNIVERSITY OF ILLINOIS BE LIABLE TO
+ * ANY PARTY FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL
+ * DAMAGES ARISING OUT  OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
+ * EVEN IF THE AUTHOR AND/OR THE UNIVERSITY OF ILLINOIS HAS BEEN ADVISED
+ * OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * THE AUTHOR AND THE UNIVERSITY OF ILLINOIS SPECIFICALLY DISCLAIM ANY
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.  THE SOFTWARE
+ * PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND NEITHER THE AUTHOR NOR
+ * THE UNIVERSITY OF ILLINOIS HAS ANY OBLIGATION TO PROVIDE MAINTENANCE,
+ * SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS."
+ *
+ * Author:	    Steve Lumetta
+ * Version:	    2
+ * Creation Date:   Thu Sep  9 22:22:00 2004
+ * Filename:	    input.h
+ * History:
+ *	SL	1	Thu Sep  9 22:22:00 2004
+ *		First written.
+ *	SL	2	Sun Sep 13 04:11:44 2009
+ *		Changed display interface for Tux controller.
+ */
+
+#ifndef INPUT_H
+#define INPUT_H
+
+/* possible commands from input device, whether keyboard or game controller */
+typedef enum {
+    TURN_NONE, TURN_RIGHT, TURN_BACK, TURN_LEFT,
+    NUM_TURNS, CMD_QUIT = NUM_TURNS
+} cmd_t;
+
+/* Initialize the input device. */
+extern int init_input ();
+
+/* Read a command from the input device. */
+extern cmd_t get_command ();
+
+/* Shut down the input device. */
+extern void shutdown_input ();
+
+/*
+ * Show the elapsed seconds on the Tux controller (no effect when
+ * compiled for a keyboard).
+ */
+extern void display_time_on_tux (int num_seconds);
+
+#endif /* INPUT_H */
+
 {
     static dir_t prev_cur = DIR_STOP; /* previous direction sent  */
     static dir_t pushed = DIR_STOP;   /* last direction pushed    */
@@ -219,7 +284,6 @@ void
 display_time_on_tux (int num_seconds)
 {
 #if (USE_TUX_CONTROLLER != 0)
-#error "Tux controller code is not operational yet."
 #endif
 }
 
@@ -239,11 +303,20 @@ main ()
 
     /* Grant ourselves permission to use ports 0-1023 */
     if (ioperm (0, 1024, 1) == -1) {
-	perror ("ioperm");
-	return 3;
+    	perror ("ioperm");
+    	return 3;
     }
 
-    init_input ();
+    printf("Initting input...\n");
+    init_input();
+    printf("Init input complete!\n");
+    printf("Initting tux...\n");
+    ioctl(fd, TUX_INIT);
+    printf("Init tux complete!\n");
+    printf("Writing to tux...\n");
+    ioctl(fd, TUX_SET_LED, 0xFFFFBEEF);
+    printf("Writing to tux complete!\n");
+
     while (1) {
 	printf ("CURRENT DIRECTION IS %s\n", dir_names[dir]);
         while ((cmd = get_command (dir)) == TURN_NONE);

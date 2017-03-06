@@ -54,8 +54,11 @@ char led_digits[16] = {
     0xE8    // F
 };
 
-volatile char led_state[6];
-volatile char button_state[2];
+volatile char led_state[6] = {
+    MTCP_LED_SET,
+    0xf, 0, 0, 0, 0
+};
+volatile char button_state[2] = { 0 };
 
 /* tuxctl_handle_packet()
  * IMPORTANT : Read the header for tuxctl_ldisc_data_callback() in
@@ -72,23 +75,28 @@ void tuxctl_handle_packet (struct tty_struct* tty, unsigned char* packet)
     b = packet[1]; /* values when printing them. */
     c = packet[2];
 
-    printk("packet : %x %x %x\n", op, b, c);
+    // printk("packet : %x %x %x\n", op, b, c);
 
+    // Lock around each packet
     spin_lock_irqsave(&tux_lock, flags);
 
     switch (op) {
         case MTCP_ACK:
+            // printk("Tux ACK\n");
             break;
         case MTCP_BIOC_EVENT:
+            // printk("Tux BIOC\n");
             button_state[0] = b;
             button_state[1] = c;
             break;
         case MTCP_RESET:
+            // printk("Tux RESET\n");
             data = MTCP_BIOC_ON;
             tuxctl_ldisc_put(tty, &data, 1);
             tuxctl_ldisc_put(tty, (char *)led_state, 6);
             break;
         case MTCP_POLL_OK:
+            // printk("Tux POLL\n");
             break;
         default:
             break;
@@ -154,10 +162,16 @@ int set_led(unsigned long arg, struct tty_struct *tty) {
 int buttons(unsigned long arg, struct tty_struct *tty) {
 
     int error, data = 0;
+    unsigned long flags;
+
+    // Lock around the button state
+    spin_lock_irqsave(&tux_lock, flags);
 
     // Pack button data into an int
     data = button_state[0] & 0xf;
     data |= (button_state[1] & 0xf) << 4;
+
+    spin_unlock_irqrestore(&tux_lock, flags);
 
     // And copy that data to user space
     error = copy_to_user((int *)arg, &data, 4);
@@ -182,12 +196,17 @@ int
 tuxctl_ioctl (struct tty_struct* tty, struct file* file,
 	      unsigned cmd, unsigned long arg)
 {
+    printk("Tux ioctl called!\n");
+
     switch (cmd) {
     	case TUX_INIT:
+            // printk("Tux INIT\n");
             return init(tty);
     	case TUX_BUTTONS:
+            // printk("Tux BUTTONS\n");
             return buttons(arg, tty);
     	case TUX_SET_LED:
+            // printk("Tux LED\n");
             return set_led(arg, tty);
     	case TUX_LED_ACK:
     	case TUX_LED_REQUEST:
