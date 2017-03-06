@@ -120,12 +120,17 @@ static int
 prepare_maze_level (int level)
 {
     int i; /* loop index for drawing display */
-
+    unsigned char r, g, b;
     /*
      * Record level in game_info; other calculations use offset from
      * level 1.
      */
     game_info.number = level--;
+
+    r = 75 * level;
+    g = 150 * level;
+    b = 25 * level;
+    set_palette_color(0x22, r, g, b);
 
     /* Set per-level parameter values. */
     if ((game_info.maze_x_dim = MAZE_MIN_X_DIM + 2 * level) >
@@ -440,6 +445,7 @@ static void *rtc_thread(void *arg)
 	int need_redraw = 0;
 	int goto_next_level = 0;
     char text[MAX_STRING_LENGTH];
+    unsigned char r = 0, g = 85, b = 170;
 
 	// Loop over levels until a level is lost or quit.
 	for (level = 1; (level <= MAX_LEVEL) && (quit_flag == 0); level++)
@@ -479,6 +485,10 @@ static void *rtc_thread(void *arg)
 		{
 			// Wait for Periodic Interrupt
 			ret = read(fd, &data, sizeof(unsigned long));
+
+            // Update palette
+            set_palette_color(0x20, r++, g++, b++);
+
 
 			// Update tick to keep track of time.  If we missed some
 			// interrupts we want to update the player multiple times so
@@ -595,9 +605,13 @@ static void *rtc_thread(void *arg)
                 show_screen();
                 erase_player(play_x, play_y);
             }
-            sprintf(text, "Level %d    %d Fruit    %.2i:%.2i",
+
+            int fruit = get_remaining_fruit();
+
+            sprintf(text, "Level %d    %d %s    %.2i:%.2i",
                 level,
                 get_remaining_fruit(),
+                fruit == 1 ? "Fruit" : "Fruits",
                 level_ticks / 32 / 60,
                 level_ticks / 32 % 60);
             show_status(text);

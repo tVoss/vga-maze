@@ -590,7 +590,7 @@ int get_index(int x, int y) {
  */
 void text_to_image(char *text, unsigned char *buf) {
     int length = strlen(text);
-    memset(buf, 0, sizeof(unsigned char) * STATUS_X_DIM * STATUS_Y_DIM);
+    memset(buf, 0x22, sizeof(unsigned char) * STATUS_X_DIM * STATUS_Y_DIM);
 
     int start = (STATUS_X_DIM - length * FONT_WIDTH) / 2;
     int c, i, j;
@@ -603,7 +603,7 @@ void text_to_image(char *text, unsigned char *buf) {
             for (i = 0; i < FONT_WIDTH; i++) {
                 int x = start + i + c * FONT_WIDTH + 1;
                 int index = get_index(x, y);
-                buf[index] = byte & 1 << (FONT_WIDTH - i) ? 11 : 0;
+                buf[index] = byte & 1 << (FONT_WIDTH - i) ? 0x1F : 0x22;
             }
         }
     }

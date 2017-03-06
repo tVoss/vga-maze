@@ -133,7 +133,10 @@ extern void show_status();
 extern void clear_screens ();
 
 /* Removes the player from the screen */
-void erase_player(int x, int y);
+extern void erase_player(int x, int y);
+
+/* Changes a VGA palette color */
+extern void set_palette_color(int index, char red, char green, char blue);
 
 /*
  * draw a 12x12 block with upper left corner at logical position

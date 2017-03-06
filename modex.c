@@ -992,6 +992,26 @@ fill_palette ()
     REP_OUTSB (0x03C9, palette_RGB, 64 * 3);
 }
 
+/*
+ * set_palette_color
+ *   DESCRIPTION: Sets a specific palette color
+ *   INPUTS: index - palette color to change
+ *          (red, green, blue) - value of new color
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: changes the (index) palette color
+ */
+void set_palette_color(int index, char red, char green, char blue) {
+
+    // Write to palette at index
+    OUTB(0x03C8, index);
+
+    // Write color elements
+    OUTB(0x03C9, red);
+    OUTB(0x03C9, green);
+    OUTB(0x03C9, blue);
+}
+
 
 /*
  * write_font_data
