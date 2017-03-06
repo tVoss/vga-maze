@@ -77,8 +77,6 @@ void tuxctl_handle_packet (struct tty_struct* tty, unsigned char* packet)
 
     // prink("packet : %x %x %x\n", op, b, c);
 
-    // Lock around each packet
-    spin_lock_irqsave(&tux_lock, flags);
 
     switch (op) {
         case MTCP_ACK:
@@ -93,6 +91,8 @@ void tuxctl_handle_packet (struct tty_struct* tty, unsigned char* packet)
             // prink("Tux RESET\n");
             data = MTCP_BIOC_ON;
             tuxctl_ldisc_put(tty, &data, 1);
+            data = MTCP_LED_USR;
+            tuxctl_ldisc_put(tty, &data, 1);
             tuxctl_ldisc_put(tty, (char *)led_state, 6);
             break;
         case MTCP_POLL_OK:
@@ -101,8 +101,6 @@ void tuxctl_handle_packet (struct tty_struct* tty, unsigned char* packet)
         default:
             break;
     }
-
-    spin_unlock_irqrestore(&tux_lock, flags);
 }
 
 int init(struct tty_struct *tty) {
@@ -110,12 +108,6 @@ int init(struct tty_struct *tty) {
     tuxctl_ldisc_put(tty, &cmd, 1);
 
     cmd = MTCP_LED_USR;                 // Enable LED user mode
-    tuxctl_ldisc_put(tty, &cmd, 1);
-
-    cmd = MTCP_CLK_RESET;               // Reset the clock
-    tuxctl_ldisc_put(tty, &cmd, 1);
-
-    cmd = MTCP_CLK_UP;                  // Set clock to count up
     tuxctl_ldisc_put(tty, &cmd, 1);
 
     return 0;
@@ -149,14 +141,10 @@ int set_led(unsigned long arg, struct tty_struct *tty) {
         }
     }
 
-    spin_lock_irqsave(&tux_lock, flags);
-
     // Save state in driver
     for (i = 0; i < 6; i++) {
         led_state[i] = cmd[i];
     }
-
-    spin_unlock_irqrestore(&tux_lock, flags);
 
     // Send to device
     tuxctl_ldisc_put(tty, cmd, 6);
@@ -169,14 +157,9 @@ int buttons(unsigned long arg, struct tty_struct *tty) {
     int error, data = 0;
     unsigned long flags;
 
-    // Lock around the button state
-    spin_lock_irqsave(&tux_lock, flags);
-
     // Pack button data into an int
     data = button_state[0] & 0xf;
     data |= (button_state[1] & 0xf) << 4;
-
-    spin_unlock_irqrestore(&tux_lock, flags);
 
     // And copy that data to user space
     error = copy_to_user((int *)arg, &data, 4);
@@ -213,9 +196,6 @@ tuxctl_ioctl (struct tty_struct* tty, struct file* file,
     	case TUX_SET_LED:
             // prink("Tux LED\n");
             return set_led(arg, tty);
-    	case TUX_LED_ACK:
-    	case TUX_LED_REQUEST:
-    	case TUX_READ_LED:
     	default:
     	    return -EINVAL;
     }

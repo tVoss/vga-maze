@@ -317,6 +317,10 @@ main ()
     ioctl(fd, TUX_SET_LED, 0xFFFFBEEF);
     printf("Writing to tux complete!\n");
 
+    unsigned long buttons;
+    ioctl(fd, TUX_BUTTONS, &buttons);
+    printf("Butons value is 0x%lx\n", buttons);
+
     while (1) {
 	printf ("CURRENT DIRECTION IS %s\n", dir_names[dir]);
         while ((cmd = get_command (dir)) == TURN_NONE);

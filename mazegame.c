@@ -27,7 +27,7 @@
  * Creation Date:   Fri Sep 10 09:57:54 2004
  * Filename:	    mazegame.c
  * History:
- *	SL	1	Fri Sep 10 09:57:54 2004
+ 	Fri Sep 10 09:57:54 2004
  *		First written.
  */
 
@@ -51,6 +51,8 @@
 #include <sys/io.h>
 #include <termios.h>
 #include <pthread.h>
+
+#include "module/tuxctl-ioctl.h"
 
 #define BACKQUOTE 96
 #define UP 65
@@ -351,7 +353,7 @@ int winner= 0;
 int next_dir = UP;
 int play_x, play_y, last_dir, dir;
 int move_cnt = 0;
-int fd;
+int fd, tux_fd;
 unsigned long data;
 static struct termios tio_orig;
 static pthread_mutex_t mtx = PTHREAD_MUTEX_INITIALIZER;
@@ -370,7 +372,7 @@ static void *keyboard_thread(void *arg)
 	char key;
 	int state = 0;
 	// Break only on win or quit input - '`'
-	while (winner == 0)
+	while (winner == 0 && !quit_flag)
 	{
 		// Get Keyboard Input
 		key = getc(stdin);
@@ -421,6 +423,45 @@ static void *keyboard_thread(void *arg)
 	return 0;
 }
 
+static void *tux_thread(void *arg) {
+
+    unsigned long buttons = 0xff;
+
+    // Break only on win or quit input - '`'
+    while (winner == 0 && !quit_flag)
+    {
+        // Get tux buttons
+        ioctl(tux_fd, TUX_BUTTONS, &buttons);
+
+
+        pthread_mutex_lock(&mtx);
+
+        switch(buttons & 0xFF) {
+            case 0xEF:  // Up
+                next_dir = DIR_UP;
+                break;
+            case 0xBF:  // Down
+                next_dir = DIR_DOWN;
+                break;
+            case 0xDF:  // Left
+                next_dir = DIR_LEFT;
+                break;
+            case 0x7F:  // Right
+                next_dir = DIR_RIGHT;
+                break;
+            case 0xFE:  // Start
+                quit_flag = 1;
+                break;
+        }
+
+        pthread_mutex_unlock(&mtx);
+
+        buttons = 0xff;
+    }
+
+    return 0;
+}
+
 /* some stats about how often we take longer than a single timer tick */
 static int goodcount = 0;
 static int badcount = 0;
@@ -442,7 +483,6 @@ static void *rtc_thread(void *arg)
     int level_ticks;
 	int ret;
 	int open[NUM_DIRS];
-	int need_redraw = 0;
 	int goto_next_level = 0;
     char text[MAX_STRING_LENGTH];
     unsigned char r = 0, g = 85, b = 170;
@@ -598,24 +638,27 @@ static void *rtc_thread(void *arg)
 						break;
 		   			}
 					draw_full_block(play_x, play_y, get_player_block(last_dir), get_player_mask(last_dir));
-					need_redraw = 1;
+					show_screen();
+                    erase_player(play_x, play_y);
 				}
 			}
-			if (need_redraw) {
-                show_screen();
-                erase_player(play_x, play_y);
-            }
-
             int fruit = get_remaining_fruit();
-
+            int minutes = level_ticks / 32 / 60;
+            int seconds = level_ticks / 32 % 60;
             sprintf(text, "Level %d    %d %s    %.2i:%.2i",
                 level,
                 get_remaining_fruit(),
                 fruit == 1 ? "Fruit" : "Fruits",
-                level_ticks / 32 / 60,
-                level_ticks / 32 % 60);
+                minutes,
+                seconds);
             show_status(text);
-			need_redraw = 0;
+
+            int display = 0;
+            display |= seconds % 10;
+            display |= (seconds / 10) << 4;
+            display |= minutes << 8;
+
+            ioctl(tux_fd, TUX_SET_LED, 0xF4F70000 | display);
 		}
 	}
 	if (quit_flag == 0) winner = 1;
@@ -638,6 +681,7 @@ int main()
 
 	pthread_t tid1;
 	pthread_t tid2;
+    pthread_t tid3;
 
 	// Initialize RTC
 	fd = open("/dev/rtc", O_RDONLY, 0);
@@ -649,14 +693,20 @@ int main()
 
 	// Initialize Keyboard
 	// Turn on non-blocking mode
-    	if (fcntl (fileno (stdin), F_SETFL, O_NONBLOCK) != 0)
+	if (fcntl (fileno (stdin), F_SETFL, O_NONBLOCK) != 0)
 	{
-        	perror ("fcntl to make stdin non-blocking");
+    	perror ("fcntl to make stdin non-blocking");
 		return -1;
-    	}
+	}
+
+    // Init tux
+    tux_fd = open("/dev/ttyS0", O_RDWR | O_NOCTTY);
+    int ldsic_num = N_MOUSE;
+    ioctl(tux_fd, TIOCSETD, &ldsic_num);
+    ioctl(tux_fd, TUX_INIT);
 
 	// Save current terminal attributes for stdin.
-    	if (tcgetattr (fileno (stdin), &tio_orig) != 0)
+	if (tcgetattr (fileno (stdin), &tio_orig) != 0)
 	{
 		perror ("tcgetattr to read stdin terminal settings");
 		return -1;
@@ -684,10 +734,12 @@ int main()
 	// Create the threads
 	pthread_create(&tid1, NULL, rtc_thread, NULL);
 	pthread_create(&tid2, NULL, keyboard_thread, NULL);
+    pthread_create(&tid3, NULL, tux_thread, NULL);
 
 	// Wait for all the threads to end
 	pthread_join(tid1, NULL);
 	pthread_join(tid2, NULL);
+    pthread_join(tid3, NULL);
 
 	// Shutdown Display
 	clear_mode_X();
