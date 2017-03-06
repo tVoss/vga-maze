@@ -3,3 +3,8 @@ input-demo
 mazegame
 mazegame-demo
 tr
+*.cmd
+module/.tmp_versions
+*.ko
+*.mod.c
+*.symvers
