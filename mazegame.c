@@ -423,16 +423,23 @@ static void *keyboard_thread(void *arg)
 	return 0;
 }
 
+/*
+ * tux_thread
+ *   DESCRIPTION: Thread that handles tux inputs
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: none
+ */
 static void *tux_thread(void *arg) {
 
-    unsigned long buttons = 0xff;
+    unsigned long buttons = 0x00;
 
     // Break only on win or quit input - '`'
     while (winner == 0 && !quit_flag)
     {
         // Get tux buttons
         ioctl(tux_fd, TUX_BUTTONS, &buttons);
-
 
         pthread_mutex_lock(&mtx);
 

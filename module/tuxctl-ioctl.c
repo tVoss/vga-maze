@@ -31,9 +31,6 @@
 
 /************************ Protocol Implementation *************************/
 
-// Spin lock for critical sections
-spinlock_t tux_lock = SPIN_LOCK_UNLOCKED;
-
 // The seven segment representation of each digit
 char led_digits[16] = {
     0xE7,   // 0
@@ -103,6 +100,14 @@ void tuxctl_handle_packet (struct tty_struct* tty, unsigned char* packet)
     }
 }
 
+/*
+ * init
+ *   DESCRIPTION: Initializes tux controller
+ *   INPUTS: tty - tty struct to device
+ *   OUTPUTS: none
+ *   RETURN VALUE: 0 on success
+ *   SIDE EFFECTS: Enables buttons and LEDs on tux
+ */
 int init(struct tty_struct *tty) {
     char cmd = MTCP_BIOC_ON;            // Enable button interrupts
     tuxctl_ldisc_put(tty, &cmd, 1);
@@ -113,6 +118,15 @@ int init(struct tty_struct *tty) {
     return 0;
 }
 
+/*
+ * set_led
+ *   DESCRIPTION: Sets the LEDs on the tux controller
+ *   INPUTS: arg - the specification of what LEDs to turn on
+            tty - tty struct to device
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: Turns LEDs on/off on tux
+ */
 int set_led(unsigned long arg, struct tty_struct *tty) {
 
     // Break up argument
@@ -152,6 +166,15 @@ int set_led(unsigned long arg, struct tty_struct *tty) {
     return 0;
 }
 
+/*
+ * buttons
+ *   DESCRIPTION: Gets the status of the buttons
+ *   INPUTS: arg - pointer to int where button data will go
+            tty - tty struct to device
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: none
+ */
 int buttons(unsigned long arg, struct tty_struct *tty) {
 
     int error, data = 0;
