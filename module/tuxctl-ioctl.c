@@ -75,28 +75,28 @@ void tuxctl_handle_packet (struct tty_struct* tty, unsigned char* packet)
     b = packet[1]; /* values when printing them. */
     c = packet[2];
 
-    // printk("packet : %x %x %x\n", op, b, c);
+    // prink("packet : %x %x %x\n", op, b, c);
 
     // Lock around each packet
     spin_lock_irqsave(&tux_lock, flags);
 
     switch (op) {
         case MTCP_ACK:
-            // printk("Tux ACK\n");
+            // prink("Tux ACK\n");
             break;
         case MTCP_BIOC_EVENT:
-            // printk("Tux BIOC\n");
+            // prink("Tux BIOC\n");
             button_state[0] = b;
             button_state[1] = c;
             break;
         case MTCP_RESET:
-            // printk("Tux RESET\n");
+            // prink("Tux RESET\n");
             data = MTCP_BIOC_ON;
             tuxctl_ldisc_put(tty, &data, 1);
             tuxctl_ldisc_put(tty, (char *)led_state, 6);
             break;
         case MTCP_POLL_OK:
-            // printk("Tux POLL\n");
+            // prink("Tux POLL\n");
             break;
         default:
             break;
@@ -130,6 +130,7 @@ int set_led(unsigned long arg, struct tty_struct *tty) {
 
     int i;                              // Iteration  variable
     char cmd[6];                        // The command to send
+    unsigned long flags;
 
     cmd[0] = MTCP_LED_SET;              // We're setting the LED's
     cmd[1] = 0xf;                       // All of them
@@ -148,13 +149,17 @@ int set_led(unsigned long arg, struct tty_struct *tty) {
         }
     }
 
-    // Send to device
-    tuxctl_ldisc_put(tty, cmd, 6);
+    spin_lock_irqsave(&tux_lock, flags);
 
     // Save state in driver
     for (i = 0; i < 6; i++) {
         led_state[i] = cmd[i];
     }
+
+    spin_unlock_irqrestore(&tux_lock, flags);
+
+    // Send to device
+    tuxctl_ldisc_put(tty, cmd, 6);
 
     return 0;
 }
@@ -196,17 +201,17 @@ int
 tuxctl_ioctl (struct tty_struct* tty, struct file* file,
 	      unsigned cmd, unsigned long arg)
 {
-    printk("Tux ioctl called!\n");
+    // prink("Tux ioctl called!\n");
 
     switch (cmd) {
     	case TUX_INIT:
-            // printk("Tux INIT\n");
+            // prink("Tux INIT\n");
             return init(tty);
     	case TUX_BUTTONS:
-            // printk("Tux BUTTONS\n");
+            // prink("Tux BUTTONS\n");
             return buttons(arg, tty);
     	case TUX_SET_LED:
-            // printk("Tux LED\n");
+            // prink("Tux LED\n");
             return set_led(arg, tty);
     	case TUX_LED_ACK:
     	case TUX_LED_REQUEST:
